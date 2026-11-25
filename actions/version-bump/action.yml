@@ -1,0 +1,30 @@
+name: version-bump
+description: Compute the next semver from commit subjects and footers since the latest vX.Y.Z tag.
+
+inputs:
+  working-directory:
+    description: Directory inside the repository whose git history is read (monorepos).
+    required: false
+    default: "."
+
+outputs:
+  version:
+    description: Next version without the leading "v", e.g. 1.3.0
+    value: ${{ steps.bump.outputs.version }}
+  tag:
+    description: Next version with the leading "v", e.g. v1.3.0
+    value: ${{ steps.bump.outputs.tag }}
+
+runs:
+  using: composite
+  steps:
+    - id: bump
+      shell: bash
+      env:
+        WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: |
+        version="$(cd "$WORKING_DIRECTORY" && "${GITHUB_ACTION_PATH}/scripts/get_next_version.sh")"
+        {
+          echo "version=${version}"
+          echo "tag=v${version}"
+        } >> "$GITHUB_OUTPUT"

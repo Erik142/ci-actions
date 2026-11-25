@@ -1,0 +1,39 @@
+# Tags vX.Y.Z from the computed version and moves the vX major tag. Manual run on main only.
+#
+# GitHub-hosted ubuntu-latest runner.
+name: release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses:   # v4
+        with:
+          fetch-depth: 0   # the version script reads every tag and commit
+      - name: Compute version
+        id: version
+        uses: ./actions/version-bump
+      - name: Tag and move major tag
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          tag="v${VERSION}"
+          major="v${VERSION%%.*}"
+          if git rev-parse -q --verify "refs/tags/${tag}" > /dev/null; then
+            echo "::error::tag ${tag} already exists; no new commits since the last release"
+            exit 1
+          fi
+          git config user.name "release-bot"
+          git config user.email "release-bot@users.noreply.invalid"
+          git tag -a "${tag}" -m "${tag}"
+          git tag -f -a "${major}" -m "${major}" "${tag}"
+          git push origin "refs/tags/${tag}"
+          git push -f origin "refs/tags/${major}"
