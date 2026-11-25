@@ -1,0 +1,14 @@
+# yamllint config for the workflows and action.yml. Syntax errors and workflow schema are
+# checked by actionlint; this file enforces formatting and style only.
+extends: default
+
+rules:
+  # GitHub and action files conventionally start without a document marker.
+  document-start: disable
+  line-length:
+    max: 160
+  # GitHub workflows use the bare `on:` key, which YAML 1.1 reads as a boolean.
+  truthy:
+    allowed-values: ["true", "false", "on"]
+  comments:
+    min-spaces-from-content: 1

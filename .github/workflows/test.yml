@@ -19,13 +19,13 @@ jobs:
       - name: Install linters
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends shellcheck python3-yaml >/dev/null
+          sudo apt-get install -y -qq --no-install-recommends shellcheck yamllint >/dev/null
       - name: shellcheck
         run: shellcheck -x actions/version-bump/scripts/get_next_version.sh
       - name: actionlint
         run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
-      - name: YAML syntax
-        run: python3 -c 'import sys, yaml; [yaml.safe_load(open(f)) for f in sys.argv[1:]]' .github/workflows/*.yml actions/version-bump/action.yml
+      - name: yamllint
+        run: yamllint -c .yamllint.yml .github actions/version-bump/action.yml
 
   bats:
     runs-on: ubuntu-latest
